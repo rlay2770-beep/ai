@@ -7,6 +7,11 @@
     <!-- Marked.js for Code Formatting -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
+    <!-- Google Fonts for Myanmar & English -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- Firebase SDK Modules -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -50,10 +55,8 @@
         const db = getFirestore(app);
         let currentUser = null;
 
-        // Set Login Persistence
         setPersistence(auth, browserLocalPersistence).catch(console.error);
 
-        // Mobile Redirect Result Handling Fix
         getRedirectResult(auth).then((result) => {
             if (result && result.user) {
                 console.log("Redirect Login Successful:", result.user);
@@ -62,22 +65,17 @@
             console.error("Redirect Error:", error);
         });
 
-        // Improved Login Function
         window.loginWithGoogle = async function() {
             const provider = new GoogleAuthProvider();
-            // Optional: Ask account picker every time
             provider.setCustomParameters({ prompt: 'select_account' });
 
             try {
-                // Try Popup First
                 await signInWithPopup(auth, provider);
             } catch (error) {
-                console.warn("Popup blocked or failed, falling back to Redirect...", error);
                 if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
                     try {
                         await signInWithRedirect(auth, provider);
                     } catch (redErr) {
-                        console.error("Redirect Login Error:", redErr);
                         alert("Login Error: " + redErr.message);
                     }
                 } else {
@@ -115,7 +113,6 @@
             }
         });
 
-        // Save History Function
         window.saveChatHistory = async function(userText, aiReplyText) {
             const chatItem = { userMessage: userText, aiResponse: aiReplyText, timestamp: Date.now() };
 
@@ -138,7 +135,6 @@
             renderHistoryList(localData);
         };
 
-        // Clear History Function
         window.clearAllHistory = async function() {
             if (!confirm("မှတ်တမ်း အားလုံးကို ဖျက်ရန် သေချာပါသလား?")) return;
 
@@ -204,7 +200,7 @@
     </script>
 
     <style>
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        * { box-sizing: border-box; font-family: 'Noto Sans Myanmar', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         
         html, body { 
             margin: 0; 
@@ -234,7 +230,6 @@
         .auth-btn { background: #a8c7fa; color: #040c1e; font-weight: bold; border: none; }
         .clear-btn { background: #3b1d1d; color: #f2b8b8; border: 1px solid #602323; margin-top: 8px; }
 
-        /* Drawer Overlay */
         .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 99; }
         .sidebar-overlay.active { opacity: 1; pointer-events: auto; }
 
@@ -246,7 +241,6 @@
         .history-item { padding: 10px; background: #282a2c; border-radius: 8px; font-size: 13px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #c4c7c5; }
         .history-item:hover { background: #333537; }
 
-        /* Chat Area Box */
         #chat-box { 
             flex: 1; 
             overflow-y: auto; 
@@ -256,14 +250,19 @@
             gap: 16px; 
             -webkit-overflow-scrolling: touch; 
             touch-action: pan-y;
+            scroll-behavior: smooth;
         }
         
         .message { max-width: 90%; padding: 12px 16px; border-radius: 16px; font-size: 15px; line-height: 1.6; word-wrap: break-word; }
         .user { background: #282a2c; color: #e3e3e3; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .bot { background: #1e1f20; color: #c4c7c5; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #2e2f31; }
+        .bot { background: #1e1f20; color: #c4c7c5; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #2e2f31; position: relative; }
 
-        pre { background: #0d0e0f; padding: 12px; border-radius: 8px; overflow-x: auto; border: 1px solid #333; margin: 8px 0; white-space: pre-wrap; word-break: break-all; }
-        code { font-family: monospace; color: #75beff; font-size: 14px; }
+        /* Code Block Container with Copy Button */
+        .code-container { position: relative; margin: 10px 0; }
+        pre { background: #0d0e0f; padding: 14px; border-radius: 8px; overflow-x: auto; border: 1px solid #333; margin: 0; white-space: pre-wrap; word-break: break-all; }
+        code { font-family: 'Fira Code', monospace, sans-serif; color: #75beff; font-size: 13.5px; }
+        .copy-btn { position: absolute; top: 6px; right: 6px; background: #2e2f31; border: 1px solid #444; color: #a8c7fa; font-size: 11px; padding: 3px 8px; border-radius: 4px; cursor: pointer; }
+        .copy-btn:active { background: #a8c7fa; color: #000; }
 
         .input-area-wrapper { padding: 12px 16px; background: #131314; border-top: 1px solid #2e2f31; flex-shrink: 0; }
         .input-area { max-width: 800px; margin: 0 auto; display: flex; background: #1e1f20; border-radius: 24px; padding: 6px 8px 6px 16px; border: 1px solid #333; align-items: flex-end; }
@@ -320,7 +319,6 @@
     </div>
 
     <script>
-        // Note: Replace with active keys if revoked by Groq provider
         const GROQ_API_KEYS = [
             "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",
             "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"
@@ -334,7 +332,6 @@
 
         function rotateApiKey() {
             currentKeyIndex = (currentKeyIndex + 1) % GROQ_API_KEYS.length;
-            console.log("Switching to next Groq API Key Index:", currentKeyIndex);
         }
 
         function toggleSidebar() {
@@ -364,11 +361,11 @@
             const chatBox = document.getElementById("chat-box");
             chatBox.innerHTML = `
                 <div class="message user">${escapeHtml(userMsg)}</div>
-                <div class="message bot">${marked.parse(aiReply)}</div>
+                <div class="message bot">${formatAiMessage(aiReply)}</div>
             `;
         };
 
-        // Groq API Request Logic
+        // System Prompt Fix for Bilingual Expertise (English + Myanmar)
         async function fetchGroqAI(text, retryCount = 0) {
             if (retryCount >= GROQ_API_KEYS.length) {
                 throw new Error("RATE_LIMIT_EXCEEDED");
@@ -384,7 +381,10 @@
                 body: JSON.stringify({
                     model: "llama-3.1-8b-instant",
                     messages: [
-                        { role: "system", content: "You are RLay Developer AI, an intelligent coding and conversation assistant. Answer clearly, accurately, and naturally in Myanmar language." },
+                        { 
+                            role: "system", 
+                            content: "You are RLay Developer AI, a highly proficient software engineer and coding assistant. You excel at answering clearly, politely, and accurately in both Myanmar and English languages according to the user's input language." 
+                        },
                         { role: "user", content: text }
                     ],
                     temperature: 0.7,
@@ -395,7 +395,6 @@
             const data = await res.json();
 
             if (data.error) {
-                console.warn("API Error encountered, switching key...", data.error);
                 rotateApiKey();
                 return await fetchGroqAI(text, retryCount + 1);
             }
@@ -427,7 +426,7 @@
                 if (data.choices && data.choices[0]) {
                     const aiReply = data.choices[0].message.content;
                     
-                    chatBox.innerHTML += `<div class="message bot">${marked.parse(aiReply)}</div>`;
+                    chatBox.innerHTML += `<div class="message bot">${formatAiMessage(aiReply)}</div>`;
 
                     if (window.saveChatHistory) {
                         window.saveChatHistory(text, aiReply);
@@ -444,10 +443,40 @@
 
                 let errorDisplay = "ကွန်ရက် ချိတ်ဆက်မှု အခက်အခဲ ရှိနေပါသည်။ ခဏစောင့်ပြီး ထပ်မံ ကြိုးစားပေးပါ။";
                 if (err.message === "RATE_LIMIT_EXCEEDED") {
-                    errorDisplay = "⚠️ API Key ဖြင့် ချိတ်ဆက်၍ မရပါ။ (API Key များ သက်တမ်းကုန်/Revoke ဖြစ်သွားခြင်း ဖြစ်နိုင်ပါသည်။)";
+                    errorDisplay = "⚠️ API Key အဆင်မပြေပါ။ ခဏစောင့်ဆိုင်းပြီး ထပ်မံ ကြိုးစားပေးပါခင်ဗျာ။";
                 }
                 chatBox.innerHTML += `<div class="message bot" style="color:#ff8080;">${errorDisplay}</div>`;
             }
+        }
+
+        // Format Markdown and Add Copy Buttons to Code Blocks
+        function formatAiMessage(text) {
+            let html = marked.parse(text);
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = html;
+
+            const pres = tempDiv.querySelectorAll("pre");
+            pres.forEach((pre) => {
+                const wrapper = document.createElement("div");
+                wrapper.className = "code-container";
+                
+                const copyBtn = document.createElement("button");
+                copyBtn.className = "copy-btn";
+                copyBtn.innerText = "Copy";
+                copyBtn.onclick = function() {
+                    const codeText = pre.querySelector("code") ? pre.querySelector("code").innerText : pre.innerText;
+                    navigator.clipboard.writeText(codeText).then(() => {
+                        copyBtn.innerText = "Copied!";
+                        setTimeout(() => copyBtn.innerText = "Copy", 2000);
+                    });
+                };
+
+                pre.parentNode.insertBefore(wrapper, pre);
+                wrapper.appendChild(pre);
+                wrapper.appendChild(copyBtn);
+            });
+
+            return tempDiv.innerHTML;
         }
 
         function escapeHtml(text) {
@@ -455,5 +484,4 @@
         }
     </script>
 </body>
-  </html>
-  
+</html>
