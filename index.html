@@ -323,22 +323,24 @@
 
     <script>
         const GROQ_API_KEYS = [
-            "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",
-            "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",
-            "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"
-        ];
+    "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",
+    "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",
+    "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"
+];
 
-        let currentKeyIndex = 0;
+let currentKeyIndex = 0;
 
 function getApiKey() {
-    const key = GROQ_API_KEYS[currentKeyIndex];
+    return GROQ_API_KEYS[currentKeyIndex];
+}
+
+function rotateApiKey() {
     currentKeyIndex = (currentKeyIndex + 1) % GROQ_API_KEYS.length;
-    return key;
 }
 
 async function fetchGroqAI(text, retryCount = 0) {
     if (retryCount >= GROQ_API_KEYS.length) {
-        throw new Error("RATE_LIMIT_EXCEEDED");
+        throw new Error("API Key များအားလုံး Limit ပြည့်သွားပါပြီ။");
     }
 
     const apiKey = getApiKey();
@@ -352,29 +354,25 @@ async function fetchGroqAI(text, retryCount = 0) {
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
                 messages: [
-                    { 
-                        role: "system", 
-                        content: "You are RLay Developer AI, a helpful coding assistant. When responding in Myanmar language (Burmese), you MUST follow these strict rules:\n1. Do NOT insert unnecessary spaces between words or letters in Myanmar sentences.\n2. Use natural, modern, standard Burmese grammar and technical terms accurately.\n3. Always end responses politely with Burmese particles like 'ခင်ဗျာ'." 
-                    },
+                    { role: "system", content: "You are RLay Developer AI, a helpful coding assistant." },
                     { role: "user", content: text }
-                ],
-                temperature: 0.5,
-                max_tokens: 2048
+                ]
             })
         });
 
         if (!res.ok) {
+            rotateApiKey(); // Key Limit ပြည့်ပါက နောက် Key သို့ ပြောင်းမည်
             return await fetchGroqAI(text, retryCount + 1);
         }
 
         const data = await res.json();
-        return data;
+        return data; // မူလ App ရဲ့ Response Structure အတိုင်း ပြန်ပေးထားပါသည်
 
     } catch (error) {
+        rotateApiKey();
         return await fetchGroqAI(text, retryCount + 1);
     }
-            }
-
+}
         function toggleSidebar() {
             document.getElementById("sidebar").classList.toggle("active");
             document.getElementById("overlay").classList.toggle("active");
