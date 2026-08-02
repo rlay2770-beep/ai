@@ -330,13 +330,50 @@
 
         let currentKeyIndex = 0;
 
-        function getApiKey() {
-            return GROQ_API_KEYS[currentKeyIndex];
+function getApiKey() {
+    const key = GROQ_API_KEYS[currentKeyIndex];
+    currentKeyIndex = (currentKeyIndex + 1) % GROQ_API_KEYS.length;
+    return key;
+}
+
+async function fetchGroqAI(text, retryCount = 0) {
+    if (retryCount >= GROQ_API_KEYS.length) {
+        throw new Error("RATE_LIMIT_EXCEEDED");
+    }
+
+    const apiKey = getApiKey();
+    try {
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { 
+                "Authorization": `Bearer ${apiKey}`, 
+                "Content-Type": "application/json" 
+            },
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                messages: [
+                    { 
+                        role: "system", 
+                        content: "You are RLay Developer AI, a helpful coding assistant. When responding in Myanmar language (Burmese), you MUST follow these strict rules:\n1. Do NOT insert unnecessary spaces between words or letters in Myanmar sentences.\n2. Use natural, modern, standard Burmese grammar and technical terms accurately.\n3. Always end responses politely with Burmese particles like 'ခင်ဗျာ'." 
+                    },
+                    { role: "user", content: text }
+                ],
+                temperature: 0.5,
+                max_tokens: 2048
+            })
+        });
+
+        if (!res.ok) {
+            return await fetchGroqAI(text, retryCount + 1);
         }
 
-        function rotateApiKey() {
-            currentKeyIndex = (currentKeyIndex + 1) % GROQ_API_KEYS.length;
-        }
+        const data = await res.json();
+        return data;
+
+    } catch (error) {
+        return await fetchGroqAI(text, retryCount + 1);
+    }
+            }
 
         function toggleSidebar() {
             document.getElementById("sidebar").classList.toggle("active");
