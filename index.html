@@ -385,12 +385,12 @@
                     model: "llama-3.3-70b-versatile",
                     
                     messages: [
-                        { 
-                            role: "system", 
-                            content: "You are RLay Developer AI, a helpful, highly intelligent coding assistant. You must communicate in natural, fluent, grammatically correct Myanmar language (Burmese). Never use robotic or direct literal machine translations. Speak politely with formal Burmese particles like 'ခင်ဗျာ'." 
-                        },
-                        { role: "user", content: text }
-                    ],
+    { 
+        role: "system", 
+        content: "You are RLay Developer AI, a helpful coding assistant. When responding in Myanmar language (Burmese), you MUST follow these strict rules:\n1. Do NOT insert unnecessary spaces between words or letters in Myanmar sentences (e.g., write 'တောက်တဲအမေ' not 'တောက် တဲ အမေ').\n2. Use natural, modern, standard Burmese grammar. Avoid bizarre, archaic, or incorrect vocabulary.\n3. Always end responses politely with Burmese particles like 'ခင်ဗျာ'." 
+    },
+    { role: "user", content: text }
+],
                     temperature: 0.5,
                     max_tokens: 2048
                 })
