@@ -320,7 +320,6 @@
     </div>
 
     <script>
-        // API Keys စုစုပေါင်း (၃) ခုလုံး စနစ်တကျ ထည့်သွင်းထားပါသည်
         const GROQ_API_KEYS = [
             "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",
             "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",
@@ -369,7 +368,7 @@
             `;
         };
 
-        // Improved Groq API Fetch Logic with Auto-Key Switching
+        // Improved Groq API Fetch Logic (Token Increase & Anti-Repetition)
         async function fetchGroqAI(text, retryCount = 0) {
             if (retryCount >= GROQ_API_KEYS.length) {
                 throw new Error("RATE_LIMIT_EXCEEDED");
@@ -386,11 +385,15 @@
                     body: JSON.stringify({
                         model: "llama-3.3-70b-versatile",
                         messages: [
-                            { role: "system", content: "You are RLay Developer AI, an intelligent coding and conversation assistant. Answer clearly, accurately, and naturally in Myanmar language." },
+                            { 
+                                role: "system", 
+                                content: "You are RLay Developer AI, a smart coding and conversation assistant. Respond in natural, standard Myanmar language. Avoid repeating the same phrases or sentences. Complete your thoughts properly without cutting off." 
+                            },
                             { role: "user", content: text }
                         ],
-                        temperature: 0.5,
-                        max_tokens: 2048
+                        temperature: 0.6,
+                        max_tokens: 4096,
+                        frequency_penalty: 0.5
                     })
                 });
 
@@ -467,5 +470,4 @@
         }
     </script>
 </body>
-    </html>
-    
+</html>
